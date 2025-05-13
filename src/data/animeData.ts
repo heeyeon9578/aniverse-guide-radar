@@ -1,6 +1,6 @@
-
 import { Anime } from "@/types/anime";
 
+// Fallback 데이터: API 호출이 실패했을 때 사용할 샘플 데이터입니다.
 export const animeData: Anime[] = [
   {
     id: 1,
@@ -131,3 +131,6 @@ export const animeData: Anime[] = [
     ]
   }
 ];
+
+// 이제는 실제 데이터는 서비스를 통해 가져옵니다.
+// services/animeService.ts의 fetchAnimes() 함수 사용

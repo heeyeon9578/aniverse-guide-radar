@@ -1,12 +1,34 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from '@/components/SearchBar';
 import AnimeGrid from '@/components/AnimeGrid';
-import { animeData } from '@/data/animeData';
 import Header from '@/components/Header';
+import { fetchAnimes } from '@/services/animeService';
+import { Anime } from '@/types/anime';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [animes, setAnimes] = useState<Anime[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAnimes = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchAnimes();
+        setAnimes(data);
+      } catch (error) {
+        console.error('애니메이션 데이터 로딩 실패:', error);
+        toast.error('애니메이션 데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnimes();
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -30,7 +52,20 @@ const Index = () => {
           <SearchBar onSearch={handleSearch} />
         </div>
         
-        <AnimeGrid animes={animeData} searchQuery={searchQuery} />
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-2">
+                <Skeleton className="h-64 w-full rounded-lg" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <AnimeGrid animes={animes} searchQuery={searchQuery} />
+        )}
       </main>
       
       <footer className="bg-gray-100 py-6 text-center text-gray-600">

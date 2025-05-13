@@ -23,6 +23,14 @@ const AnimeGrid = ({ animes, searchQuery }: AnimeGridProps) => {
     setFilteredAnimes(filtered);
   }, [animes, searchQuery]);
 
+  if (animes.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-lg text-muted-foreground">데이터를 불러오는 중입니다...</p>
+      </div>
+    );
+  }
+
   if (filteredAnimes.length === 0) {
     return (
       <div className="text-center py-10">
@@ -32,7 +40,7 @@ const AnimeGrid = ({ animes, searchQuery }: AnimeGridProps) => {
   }
 
   return (
-    <div className="anime-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {filteredAnimes.map(anime => (
         <div key={anime.id} className="animate-fade-in">
           <AnimeCard anime={anime} />

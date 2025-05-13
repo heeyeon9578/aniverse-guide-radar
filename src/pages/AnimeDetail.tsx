@@ -1,7 +1,6 @@
 
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { animeData } from '@/data/animeData';
 import { Anime } from '@/types/anime';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +14,8 @@ import {
 import Header from '@/components/Header';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { fetchAnimeById } from '@/services/animeService';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,34 +23,72 @@ const AnimeDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 실제로는 API 요청을 할 것이지만, 여기서는 로컬 데이터를 사용합니다
-    const foundAnime = animeData.find(a => a.id === Number(id));
-    
-    // 데이터 로딩 시뮬레이션
-    setTimeout(() => {
-      setAnime(foundAnime || null);
-      setLoading(false);
-      
-      if (!foundAnime) {
+    const loadAnime = async () => {
+      setLoading(true);
+      try {
+        if (id) {
+          const animeData = await fetchAnimeById(Number(id));
+          setAnime(animeData);
+          
+          if (!animeData) {
+            toast({
+              title: "애니메이션을 찾을 수 없습니다",
+              description: "요청하신 애니메이션 정보를 찾을 수 없습니다.",
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('애니메이션 상세 정보 로딩 실패:', error);
         toast({
-          title: "애니메이션을 찾을 수 없습니다",
-          description: "요청하신 애니메이션 정보를 찾을 수 없습니다.",
+          title: "데이터 로딩 오류",
+          description: "애니메이션 정보를 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
-    }, 500);
+    };
+
+    loadAnime();
   }, [id]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-10 w-56 bg-gray-200 rounded mb-4"></div>
-            <div className="h-6 w-40 bg-gray-200 rounded"></div>
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <Link to="/" className="inline-flex items-center text-anime-primary hover:text-anime-primary/80 mb-6">
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            뒤로 가기
+          </Link>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-1">
+              <Skeleton className="h-[500px] w-full rounded-lg" />
+            </div>
+            
+            <div className="md:col-span-2 space-y-4">
+              <Skeleton className="h-10 w-3/4" />
+              <div className="flex gap-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-20" />
+                ))}
+              </div>
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-6 w-1/4" />
+              <div className="space-y-2 pt-4">
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <div className="space-y-2 pt-2">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
