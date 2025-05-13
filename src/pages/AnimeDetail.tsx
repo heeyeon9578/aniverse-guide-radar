@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Anime } from '@/types/anime';
@@ -9,7 +8,8 @@ import {
   Star, 
   Info, 
   ExternalLink,
-  ArrowLeft
+  ArrowLeft,
+  AlertCircle
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { toast } from '@/components/ui/use-toast';
@@ -21,6 +21,16 @@ const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [anime, setAnime] = useState<Anime | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  
+  // 안정적인 대체 이미지 URL
+  const fallbackImage = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000";
+
+  // 이미지 로드 오류 처리 함수
+  const handleImageError = () => {
+    console.log('상세 이미지 로드 오류');
+    setImageError(true);
+  };
 
   useEffect(() => {
     const loadAnime = async () => {
@@ -51,6 +61,8 @@ const AnimeDetail = () => {
     };
 
     loadAnime();
+    // 다른 애니메이션으로 이동할 때 이미지 오류 상태 초기화
+    setImageError(false);
   }, [id]);
 
   if (loading) {
@@ -124,8 +136,19 @@ const AnimeDetail = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
           <div className="md:col-span-1">
-            <div className="rounded-lg overflow-hidden shadow-lg h-auto">
-              <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
+            <div className="rounded-lg overflow-hidden shadow-lg h-auto relative">
+              <img 
+                src={imageError ? fallbackImage : anime.image} 
+                alt={anime.title} 
+                className="w-full h-full object-cover" 
+                onError={handleImageError}
+                loading="lazy"
+              />
+              {imageError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-60">
+                  <AlertCircle className="text-gray-400 h-24 w-24" />
+                </div>
+              )}
             </div>
           </div>
           
